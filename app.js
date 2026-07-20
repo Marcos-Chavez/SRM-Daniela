@@ -529,3 +529,62 @@ function enviarRecordatorioCliente(nombre, correo, vehiculo, placa) {
             console.error('Error al enviar el correo:', error);
         });
 }
+
+
+
+// ==========================================
+// CONFIGURACIÓN DE AUTENTICACIÓN (LOGIN)
+// ==========================================
+
+// Inicializar el servicio de autenticación de Firebase
+const auth = firebase.auth();
+
+// Referencias a los elementos de la interfaz
+const loginContainer = document.getElementById('login-container');
+const appContainer = document.getElementById('app-container');
+const loginFormBtn = document.getElementById('btn-login');
+const logoutBtn = document.getElementById('btn-logout');
+const loginError = document.getElementById('login-error');
+
+// Escuchar cambios en la sesión en tiempo real
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        // Usuario conectado: Muestra la app y oculta la pantalla de Login
+        loginContainer.style.display = 'none';
+        appContainer.style.display = 'block';
+    } else {
+        // Usuario desconectado: Muestra la pantalla de Login y oculta la app
+        loginContainer.style.display = 'block';
+        appContainer.style.display = 'none';
+    }
+});
+
+// Evento para Iniciar Sesión al hacer clic en el botón
+loginFormBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        loginError.innerText = "Por favor, ingresa correo y contraseña.";
+        loginError.style.display = 'block';
+        return;
+    }
+
+    auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+            loginError.style.display = 'none';
+        })
+        .catch((error) => {
+            console.error("Error al iniciar sesión:", error);
+            loginError.innerText = "Correo o contraseña incorrectos.";
+            loginError.style.display = 'block';
+        });
+});
+
+// Evento para Cerrar Sesión
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        auth.signOut();
+    });
+}
