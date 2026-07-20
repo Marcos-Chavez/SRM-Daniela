@@ -109,9 +109,9 @@ document.getElementById("registroForm").addEventListener("submit", async (e) => 
             };
 
             if (tipoServicio === "Mantenimiento") {
-                // Si es mantenimiento, SÍ recalculamos la alerta (ej: 140 días)
+                // Si es mantenimiento, SÍ recalculamos la alerta (ej: 105 días)
                 const fechaBase = new Date(fechaFormulario);
-                fechaBase.setDate(fechaBase.getDate() + 140); // Modifica aquí los días de conteo si lo deseas
+                fechaBase.setDate(fechaBase.getDate() + 105); // Modifica aquí los días de conteo si lo deseas
                 const nuevaFechaAlerta = fechaBase.toISOString().split('T')[0];
 
                 datosAEnviar.fechaMantenimiento = fechaFormulario;
@@ -143,7 +143,7 @@ document.getElementById("registroForm").addEventListener("submit", async (e) => 
 
             if (tipoServicio === "Mantenimiento") {
                 const fechaBase = new Date(fechaFormulario);
-                fechaBase.setDate(fechaBase.getDate() + 140); // Modifica aquí los días de conteo si lo deseas
+                fechaBase.setDate(fechaBase.getDate() + 105); // Modifica aquí los días de conteo si lo deseas
                 fechaAlertaFinal = fechaBase.toISOString().split('T')[0];
                 esNotificado = false;
             } else {
@@ -275,7 +275,7 @@ clientesRef.onSnapshot((snapshot) => {
 
         const fechaUltimo = new Date(cliente.fechaMantenimiento);
         const fechaProxima = new Date(fechaUltimo);
-        fechaProxima.setDate(fechaProxima.getDate() + 140); 
+        fechaProxima.setDate(fechaProxima.getDate() + 105); 
 
         const fechaHoy = new Date();
         const diferenciaTiempo = fechaProxima - fechaHoy;
