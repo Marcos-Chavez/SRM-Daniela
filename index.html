@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRM Daniela - Panel de Control</title>
+    <style>
+   /* =================================================================
+   ESTILOS OPTIMIZADOS PARA MÁXIMA VISIBILIDAD (FONDO CLARO)
+   ================================================================= */
+body {
+    background-color: #f3f4f6; /* Gris claro que amplía el campo de vista */
+    color: #1f2937;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+/* La tarjeta principal del formulario (Ahora resalta e ilumina la pantalla) */
+.card {
+    background: #ffffff; /* Blanco puro para dar contraste total al logo */
+    border: 1px solid #e5e7eb;
+    border-radius: 16px; 
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 15px rgba(30, 112, 224, 0.1); /* Brillo azul sutil de fondo */
+    max-width: 650px; /* Un poco más ancho para mejorar la vista */
+    margin: 0 auto 30px auto;
+    padding: 35px;
+}
+
+/* Contenedor del logo para darle un acabado de "placa" pulida */
+.logo-container {
+    text-align: center; 
+    margin-bottom: 25px;
+    background-color: #000000; /* Fondo negro interno SOLO para el logo */
+    padding: 15px;
+    border-radius: 12px; /* Bordes redondeados para la imagen */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Título Principal */
+h2 {
+    color: #1553a7; /* Azul rey oscuro elegante y legible */
+    text-align: center;
+    font-size: 1.6rem;
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Agrupación de Campos */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #4b5563; /* Gris oscuro nítido */
+}
+
+/* Entradas de texto, selectores y textareas (Estilo limpio) */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background-color: #f9fafb; /* Fondo grisáceo muy suave */
+    color: #111827;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+/* Efecto de enfoque: Borde Azul */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #1e70e0; 
+    background-color: #ffffff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 112, 224, 0.15);
+}
+
+/* Estilo para los campos deshabilitados (Campos bloqueados al detectar placa) */
+.form-group input:disabled {
+    background-color: #f3f4f6 !important; 
+    color: #6b7280 !important;
+    border-color: #e5e7eb !important;
+    cursor: not-allowed;
+}
+
+/* Botón Principal de Registro (Azul de alta intensidad) */
+.btn-block {
+    background: linear-gradient(135deg, #1e70e0, #1553a7); 
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(30, 112, 224, 0.2);
+}
+
+.btn-block:hover {
+    background: linear-gradient(135deg, #1553a7, #0f3d7a);
+    transform: translateY(-1px);
+}
+
+/* Botón manual de PDF (Rojo vivo) */
+#btnDescargarPDF {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important; 
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2) !important;
+}
+
+#btnDescargarPDF:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b) !important;
+}
+        
+        /* Buscador y Tabla */
+        .search-box { margin-bottom: 15px; display: flex; gap: 10px; }
+        .search-box input { flex: 1; }
+        
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; font-size: 14px; }
+        th { background-color: #2c3e50; color: white; font-weight: 600; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        /* Estados del Semáforo */
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .badge-green { background-color: #2ecc71; color: white; }
+        .badge-yellow { background-color: #f1c40f; color: #333; }
+        .badge-red { background-color: #e74c3c; color: white; }
+        
+        /* Botones de acción dentro de la tabla */
+        .btn-action { background-color: #27ae60; padding: 6px 10px; font-size: 12px; width: auto; display: inline-block; margin-right: 5px; }
+        .btn-action:hover { background-color: #219653; }
+        .btn-ws { background-color: #25d366; }
+        .btn-ws:hover { background-color: #20ba5a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>👨‍🔧 Sistema de Registro de Mantenimiento - SRM DANIELA</h1>
+    
+   <!-- Sección Formulario -->
+<div class="card">
+    <!-- 🖼️ CONTENEDOR DEL LOGO DEL TALLER -->
+  <div style="text-align: center; margin-bottom: 20px;">
+        <img src="logo-taller.png" alt="Logo del Taller" style="max-width: 180px; height: auto; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.3));">
+    </div>
+    <h2>Registro de Trabajo Automotriz</h2>
+    <form id="registroForm">
+        <div class="form-group">
+            <label>Placa del Vehículo (Identificador Único):</label>
+            <input type="text" id="placa" placeholder="Ej. PE1234" required style="text-transform: uppercase;">
+        </div>
+
+        <div class="form-group">
+            <label>Nombre del Cliente:</label>
+            <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
+        </div>
+
+        <div class="form-group">
+            <label>Correo Electrónico:</label>
+            <input type="email" id="correo" placeholder="ejemplo@correo.com" required>
+        </div>
+
+        <div class="form-group">
+            <label>WhatsApp (con código de país):</label>
+            <input type="text" id="whatsapp" placeholder="Ej. 50766666666" required>
+        </div>
+
+        <!-- 👈 NUEVO CAMPO: Ubicado abajo de WhatsApp -->
+        <div class="form-group">
+            <label for="comentarioServicio" style="font-weight: bold;">Detalles del Trabajo / Comentario:</label>
+            <textarea id="comentarioServicio" placeholder="Ej: Se realizó cambio de aceite 10W30, filtro y revisión de fluidos." rows="3" required style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit;"></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="tipoServicio" style="font-weight: bold;">Tipo de Servicio:</label>
+            <select id="tipoServicio" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit;">
+                <option value="Mantenimiento">⚙️ Mantenimiento (Reinicia Alertas)</option>
+                <option value="Reparación">🛠️ Reparación (Guarda nota - No altera alertas anteriores)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Fecha del Servicio:</label>
+            <input type="date" id="fechaMantenimiento" required>
+        </div>
+
+        <div class="form-group">
+            <label>Datos del Vehículo (Marca, Modelo, Color):</label>
+            <input type="text" id="vehiculo" placeholder="Ej. Toyota Hilux Gris" required>
+        </div>
+
+        <button type="submit" class="btn-block">💾 Registrar Trabajo y Procesar</button>
+    </form>
+    </div>
+
+    <!-- Sección Base de Datos Estilo Excel -->
+    <div class="card">
+        <h2>📋 Panel de Control e Historial de Clientes</h2>
+        
+        <div class="search-box">
+            <input type="text" id="buscador" onkeyup="filtrarTabla()" placeholder="🔍 Buscar por Placa, Vehículo o Nombre del cliente...">
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Vehículo / Placa</th>
+                        <th>Contacto</th>
+                        <th>Último Mantenimiento</th>
+                        <th>Próxima Alerta</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaClientes">
+                    <!-- Los datos de Firebase se cargarán aquí automáticamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- MODAL DE HISTORIAL DE MANTENIMIENTO -->
+<div id="modalHistorial" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;">
+    <div style="background-color: #fff; padding: 20px; border-radius: 8px; width: 90%; max-width: 550px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative;">
+        <h3 style="margin-top: 0; color: #2c3e50;">📋 Historial de Trabajo - Placa: <span id="modalPlaca" style="color: #f1c40f;"></span></h3>
+        
+        <label style="font-weight: bold; color: #7f8c8d;">Notas Anteriores:</label>
+        <div id="notasContenedor" style="background: #f9f9f9; border: 1px solid #ddd; padding: 10px; border-radius: 4px; max-height: 150px; overflow-y: auto; margin-bottom: 15px; font-size: 14px; white-space: pre-wrap;"></div>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label for="nuevaNotaInput" style="font-weight: bold;">Agregar Nueva Anotación:</label>
+            <textarea id="nuevaNotaInput" placeholder="Ej: Se cambiaron pastillas de frenos delanteras y bandas traseras." rows="3" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; font-family: inherit; margin-top: 5px;"></textarea>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;">
+            <button onclick="cerrarModalHistorial()" style="padding: 8px 15px; background: #95a5a6; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cancelar</button>
+            <button id="btnDescargarHistorial" style="padding: 8px 15px; background: #34495e; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📥 Descargar PDF</button>
+            <button id="btnGuardarNota" style="padding: 8px 15px; background: #2ecc71; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">💾 Guardar Nota</button>
+        </div>
+    </div>
+</div>
+<!-- Scripts de Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="firebaseConfig.js"></script>
+
+<!-- Librería externa de EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<!-- 👈 NUEVA LIBRERÍA: Cargar jsPDF para generar archivos PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Tu archivo con la lógica del taller -->
+<script src="app.js"></script>
+
+</body>
+</html>
