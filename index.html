@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SRM Daniela - Panel de Control</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"></script>
     <style>
    /* =================================================================
    ESTILOS OPTIMIZADOS PARA MÁXIMA VISIBILIDAD (FONDO CLARO)
@@ -155,7 +156,20 @@ h2 {
     </style>
 </head>
 <body>
-
+<!-- PANTALLA DE LOGIN -->
+    <div id="login-container" style="max-width: 400px; margin: 50px auto; padding: 25px; background: white; border-radius: 8px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="margin-bottom: 20px; color: #1f2937;">Acceso al Sistema</h2>
+        <input type="email" id="login-email" placeholder="Correo electrónico" style="width: 100%; margin-bottom: 12px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" required><br>
+        <input type="password" id="login-password" placeholder="Contraseña" style="width: 100%; margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" required><br>
+        <button id="btn-login" style="width: 100%; padding: 10px; background-color: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Iniciar Sesión</button>
+        <p id="login-error" style="color: #dc2626; display: none; margin-top: 15px; font-size: 14px;"></p>
+    </div>
+<!-- INICIO DEL SISTEMA OCULTO -->
+<div id="app-container" style="display: none;">
+    <button id="btn-logout" style="float: right; margin: 10px; padding: 8px 15px; background-color: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
+    <!-- INICIO DEL SISTEMA OCULTO -->
+    <div id="app-container" style="display: none;">
+        <button id="btn-logout" style="float: right; margin: 10px; padding: 8px 15px; background-color: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
 <div class="container">
     <h1>👨‍🔧 Sistema de Registro de Mantenimiento - SRM DANIELA</h1>
     
@@ -274,8 +288,9 @@ h2 {
 <!-- 👈 NUEVA LIBRERÍA: Cargar jsPDF para generar archivos PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- Tu archivo con la lógica del taller -->
+<!--  archivo con la lógica del taller -->
 <script src="app.js"></script>
-
+ <!-- Cierre de app-container -->       
+</div> 
 </body>
 </html>
