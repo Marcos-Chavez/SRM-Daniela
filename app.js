@@ -1,55 +1,15 @@
-// ==========================================
-// 1. CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE
-// ==========================================
-
-const firebaseConfig = {
-    apiKey: "AIzaSyC97fkEWWkIjBLDpwvVxN2euhk8N7FNA40",
-    authDomain: "srm-daniela.firebaseapp.com",
-    databaseURL: "https://srm-daniela-default-rtdb.firebaseio.com",
-    projectId: "srm-daniela",
-    storageBucket: "srm-daniela.firebasestorage.app",
-    messagingSenderId: "976335690387",
-    appId: "1:976335690387:web:d01c0bf7815b379162cb66"
-};
-
-// Inicializar Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-// ==========================================
-// 2. CONFIGURACIÓN DE EMAILJS
-// ==========================================
-
-const EMAILJS_SERVICE_ID = 'service_qhs126c';
+// =================================================================
+// 1. CREDENCIALES GLOBALES DE EMAILJS Y CONFIGURACIÓN GENERAL
+// =================================================================
+const EMAILJS_SERVICE_ID = 'service_qhsl26c';
 const EMAILJS_TEMPLATE_ID = 'template_acyhfbb';
 const EMAILJS_PUBLIC_KEY = 'ju9VOg1iEFoz2ny8u';
 
-if (typeof emailjs !== 'undefined') {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-}
-
-// ==========================================
-// 3. REFERENCIAS Y VARIABLES GLOBALES
-// ==========================================
-
+// La variable 'db' y 'auth' vienen creadas desde firebaseConfig.js
 const clientesRef = db.collection("clientes");
 
-let clienteSeleccionadoId = null;
-let datosClienteActual = null;
-
-const campoFecha = document.getElementById('fechaMantenimiento');
-if (campoFecha) {
-    campoFecha.value = new Date().toISOString().split('T')[0];
-}
-
-// ==========================================
-// 4. AUTENTICACIÓN (LOGIN / LOGOUT)
-// ==========================================
-
+// Control del flujo de Autenticación (Login / Logout)
+const auth = firebase.auth();
 const loginContainer = document.getElementById('login-container');
 const appContainer = document.getElementById('app-container');
 const loginFormBtn = document.getElementById('btn-login');
@@ -96,172 +56,514 @@ if (logoutBtn) {
     });
 }
 
-// ==========================================
-// 5. REGISTRO DE TRABAJOS Y NOTIFICACIÓN
-// ==========================================
+// Variables globales para el control del modal
+let clienteSeleccionadoId = null;
+let datosClienteActual = null; 
 
-const registroForm = document.getElementById('registroForm');
+// Colocar por defecto la fecha de hoy en el formulario
+const campoFechaMantenimiento = document.getElementById('fechaMantenimiento');
+if (campoFechaMantenimiento) {
+    campoFechaMantenimiento.value = new Date().toISOString().split('T')[0];
+}
 
-if (registroForm) {
-    registroForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+// Variable global temporal para guardar los datos del último registro procesado para el PDF
+let ultimoRegistroProcesado = null;
 
-        const placa = document.getElementById('placa').value.trim().toUpperCase();
-        const cliente = document.getElementById('cliente').value.trim();
-        const correo = document.getElementById('correo').value.trim();
-        const telefono = document.getElementById('telefono').value.trim();
-        const vehiculo = document.getElementById('vehiculo').value.trim();
-        const servicio = document.getElementById('servicio').value.trim();
-        const estado = document.getElementById('estado').value;
-
-        const nuevoRegistro = {
-            placa: placa,
-            cliente: cliente,
-            correo: correo,
-            telefono: telefono,
-            vehiculo: vehiculo,
-            servicio: servicio,
-            estado: estado,
-            fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        clientesRef.add(nuevoRegistro)
-            .then((docRef) => {
-                console.log("Registro guardado con ID:", docRef.id);
+// =================================================================
+// DETECTION: Buscar placa en tiempo real y auto-completar
+// =================================================================
+const elPlaca = document.getElementById("placa");
+if (elPlaca) {
+    elPlaca.addEventListener("input", async (e) => {
+        const placaIngresada = e.target.value.trim().toUpperCase();
+        
+        if (placaIngresada.length >= 3) {
+            try {
+                const snapshot = await clientesRef.where("placa", "==", placaIngresada).get();
                 
-                const templateParams = {
-                    to_name: cliente,
-                    to_email: correo,
-                    placa: placa,
-                    vehiculo: vehiculo,
-                    servicio: servicio,
-                    estado: estado
-                };
-
-                return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-            })
-            .then((response) => {
-                console.log('¡Correo enviado con éxito!', response.status, response.text);
-                alert("Trabajo registrado y correo de notificación enviado con éxito.");
-                registroForm.reset();
-                if (campoFecha) campoFecha.value = new Date().toISOString().split('T')[0];
-            })
-            .catch((error) => {
-                console.error("Error en el proceso:", error);
-                alert("El registro se guardó, pero hubo un detalle al enviar el correo.");
-            });
+                if (!snapshot.empty) {
+                    const datos = snapshot.docs[0].data();
+                    
+                    document.getElementById("nombre").value = datos.nombre;
+                    document.getElementById("correo").value = datos.correo;
+                    document.getElementById("whatsapp").value = datos.whatsapp;
+                    document.getElementById("vehiculo").value = datos.vehiculo;
+                    
+                    document.getElementById("nombre").disabled = true;
+                    document.getElementById("correo").disabled = true;
+                    document.getElementById("whatsapp").disabled = true;
+                    document.getElementById("vehiculo").disabled = true;
+                    
+                    document.getElementById("nombre").style.backgroundColor = "#e1e8ed";
+                    document.getElementById("correo").style.backgroundColor = "#e1e8ed";
+                    document.getElementById("whatsapp").style.backgroundColor = "#e1e8ed";
+                    document.getElementById("vehiculo").style.backgroundColor = "#e1e8ed";
+                } else {
+                    liberarCamposFormulario();
+                }
+            } catch (error) {
+                console.error("Error al buscar placa en tiempo real:", error);
+            }
+        } else {
+            liberarCamposFormulario();
+        }
     });
 }
 
-// ==========================================
-// 6. BÚSQUEDA POR PLACA E HISTORIAL
-// ==========================================
+function liberarCamposFormulario() {
+    const campos = ["nombre", "correo", "whatsapp", "vehiculo"];
+    campos.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = false;
+            el.style.backgroundColor = "#fff";
+        }
+    });
+}
 
-const btnBuscar = document.getElementById('btnBuscarPlaca');
-if (btnBuscar) {
-    btnBuscar.addEventListener('click', () => {
-        const placaBuscar = document.getElementById('buscarPlaca').value.trim().toUpperCase();
-        const contenedorResultado = document.getElementById('resultadoBusqueda');
+// =================================================================
+// 2. EVENTO: Cuando el mecánico envía el formulario de registro
+// =================================================================
+const elRegistroForm = document.getElementById("registroForm");
+if (elRegistroForm) {
+    elRegistroForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-        if (!placaBuscar) {
-            alert("Ingresa una placa para buscar.");
+        const placa = document.getElementById("placa").value.trim().toUpperCase();
+        const vehiculo = document.getElementById("vehiculo").value.trim();
+        const nombre = document.getElementById("nombre").value.trim();
+        const correo = document.getElementById("correo").value.trim();
+        const whatsapp = document.getElementById("whatsapp").value.trim();
+        const fechaFormulario = document.getElementById("fechaMantenimiento").value;
+        const tipoServicio = document.getElementById("tipoServicio").value;
+        const comentario = document.getElementById("comentarioServicio").value.trim();
+
+        const fechaEspanol = new Date(fechaFormulario + 'T00:00:00').toLocaleDateString('es-ES');
+        const nuevaNota = `[${fechaEspanol} - ${tipoServicio.toUpperCase()}]: ${comentario}`;
+
+        try {
+            const snapshot = await clientesRef.where("placa", "==", placa).get();
+            let datosFinalesParaPDF = null;
+
+            if (!snapshot.empty) {
+                const docId = snapshot.docs[0].id;
+                const datosExistentes = snapshot.docs[0].data();
+                
+                let historialActualizado = nuevaNota;
+                if (datosExistentes.descripcion) {
+                    historialActualizado = nuevaNota + "\n\n" + datosExistentes.descripcion;
+                }
+
+                let datosAEnviar = {
+                    descripcion: historialActualizado
+                };
+
+                if (tipoServicio === "Mantenimiento") {
+                    const fechaBase = new Date(fechaFormulario);
+                    fechaBase.setDate(fechaBase.getDate() + 140);
+                    const nuevaFechaAlerta = fechaBase.toISOString().split('T')[0];
+
+                    datosAEnviar.fechaMantenimiento = fechaFormulario;
+                    datosAEnviar.fechaAlerta = nuevaFechaAlerta;
+                    datosAEnviar.notificado = false;
+                } else {
+                    datosAEnviar.fechaMantenimiento = datosExistentes.fechaMantenimiento;
+                    datosAEnviar.fechaAlerta = datosExistentes.fechaAlerta;
+                    datosAEnviar.notificado = datosExistentes.notificado;
+                }
+
+                await clientesRef.doc(docId).update(datosAEnviar);
+                
+                datosFinalesParaPDF = {
+                    nombre: datosExistentes.nombre,
+                    vehiculo: datosExistentes.vehiculo,
+                    placa: placa,
+                    whatsapp: datosExistentes.whatsapp,
+                    descripcion: historialActualizado
+                };
+
+                alert(`✅ ¡Trabajo registrado con éxito en el historial de la placa [${placa}]!`);
+
+            } else {
+                let fechaAlertaFinal = "";
+                let esNotificado = false;
+
+                if (tipoServicio === "Mantenimiento") {
+                    const fechaBase = new Date(fechaFormulario);
+                    fechaBase.setDate(fechaBase.getDate() + 140);
+                    fechaAlertaFinal = fechaBase.toISOString().split('T')[0];
+                    esNotificado = false;
+                } else {
+                    fechaAlertaFinal = "2099-12-31";
+                    esNotificado = true; 
+                }
+
+                const nuevoCliente = {
+                    placa: placa,
+                    vehiculo: vehiculo,
+                    nombre: nombre,
+                    correo: correo,
+                    whatsapp: whatsapp,
+                    descripcion: nuevaNota,
+                    fechaMantenimiento: fechaFormulario,
+                    fechaAlerta: fechaAlertaFinal, 
+                    notificado: esNotificado
+                };
+
+                await clientesRef.add(nuevoCliente);
+                datosFinalesParaPDF = nuevoCliente;
+
+                alert(`✅ ¡Cliente y vehículo registrados con éxito en el sistema!`);
+            }
+
+            ultimoRegistroProcesado = datosFinalesParaPDF;
+
+            if (confirm("¿Deseas descargar el historial actualizado en formato PDF ahora mismo?")) {
+                ejecutarDescargaPDFDirecta();
+            }
+
+            document.getElementById("registroForm").reset();
+            if (campoFechaMantenimiento) campoFechaMantenimiento.value = new Date().toISOString().split('T')[0];
+            document.getElementById('tipoServicio').value = "Mantenimiento";
+            liberarCamposFormulario();
+
+        } catch (error) {
+            console.error("Error al procesar la operación: ", error);
+            alert("Hubo un error al conectar con la base de datos.");
+        }
+    });
+}
+
+function ejecutarDescargaPDFDirecta() {
+    if (!ultimoRegistroProcesado) return;
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(44, 62, 80);
+    doc.text("HISTORIAL DE MANTENIMIENTO AUTOMOTRIZ", 14, 20);
+
+    doc.setDrawColor(241, 196, 15);
+    doc.setLineWidth(1);
+    doc.line(14, 24, 196, 24);
+
+    doc.setFontSize(11);
+    doc.setTextColor(51, 51, 51);
+    
+    doc.text(`Cliente:`, 14, 34);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${ultimoRegistroProcesado.nombre}`, 45, 34);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Vehículo:`, 14, 41);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${ultimoRegistroProcesado.vehiculo}`, 45, 41);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Placa / Matrícula:`, 14, 48);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${ultimoRegistroProcesado.placa}`, 45, 48);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`WhatsApp:`, 14, 55);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${ultimoRegistroProcesado.whatsapp}`, 45, 55);
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 62, 196, 62);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(44, 62, 80);
+    doc.text("ÚLTIMOS TRABAJOS REALIZADOS EN EL TALLER", 14, 71);
+
+    const todasLasNotas = ultimoRegistroProcesado.descripcion.split("\n\n");
+    const ultimas5Notas = todasLasNotas.slice(0, 5);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(60, 60, 60);
+
+    let ejeY = 82;
+    ultimas5Notas.forEach((nota, index) => {
+        const lineasTexto = doc.splitTextToSize(`${index + 1}. ${nota}`, 180);
+        doc.text(lineasTexto, 14, ejeY);
+        ejeY += (lineasTexto.length * 6) + 6; 
+    });
+
+    doc.setDrawColor(220, 220, 220);
+    doc.line(14, 275, 196, 275);
+    doc.setFontSize(9);
+    doc.setTextColor(127, 135, 143);
+    doc.text(`Documento oficial de control interno - Generado el: ${new Date().toLocaleString('es-ES')}`, 14, 282);
+
+    doc.save(`Historial_${ultimoRegistroProcesado.placa}.pdf`);
+}
+
+// =================================================================
+// 3. FUNCIÓN: Cargar y Escuchar la base de datos en tiempo real (TABLA)
+// =================================================================
+clientesRef.onSnapshot((snapshot) => {
+    const tabla = document.getElementById("tablaClientes");
+    if (!tabla) return;
+    tabla.innerHTML = ""; 
+
+    if(snapshot.empty) {
+        tabla.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay clientes registrados aún.</td></tr>`;
+        return;
+    }
+
+    snapshot.forEach((doc) => {
+        const cliente = doc.data();
+        const id = doc.id;
+
+        const fechaUltimo = new Date(cliente.fechaMantenimiento);
+        const fechaProxima = new Date(fechaUltimo);
+        fechaProxima.setDate(fechaProxima.getDate() + 140); 
+
+        const fechaHoy = new Date();
+        const diferenciaTiempo = fechaProxima - fechaHoy;
+        const diasRestantes = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
+
+        let badgeClass = "badge-green";
+        let estadoTexto = `Al día (${diasRestantes} días rest.)`;
+
+        if (diasRestantes <= 0) {
+            badgeClass = "badge-red";
+            estadoTexto = "⚠️ Tiempo Cumplido (Alerta)";
+
+            if (cliente.notificado === false && cliente.correo) {
+                clientesRef.doc(id).update({ notificado: true });
+                enviarRecordatorioCliente(cliente.nombre, cliente.correo, cliente.vehiculo, cliente.placa);
+            }
+        } else if (diasRestantes <= 15) {
+            badgeClass = "badge-yellow";
+            estadoTexto = "⏳ Próximo a vencer";
+        }
+
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+            <td><strong>${cliente.nombre}</strong></td>
+            <td><span style="background: #f1c40f; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #ccc;">${cliente.placa || 'S/P'}</span><br><small style="color:#555">${cliente.vehiculo}</small></td>
+            <td>${cliente.whatsapp}<br><small style="color:#777">${cliente.correo}</small></td>
+            <td>${cliente.fechaMantenimiento}</td>
+            <td>${fechaProxima.toISOString().split('T')[0]}</td>
+            <td><span class="badge ${badgeClass}">${estadoTexto}</span></td>
+            <td>
+                <button class="btn-action" onclick="abrirModalHistorial('${id}', '${cliente.placa}')" style="background-color: #3498db;" title="Ver notas o bitácora de este auto">📝 Notas</button>
+                <button class="btn-action" onclick="renovarVisita('${id}')" title="Reiniciar conteo hoy">➕ Visita</button>
+                <a href="https://wa.me/${cliente.whatsapp}" target="_blank">
+                    <button class="btn-action btn-ws" title="Abrir chat de WhatsApp">💬 Chat</button>
+                </a>
+                <button class="btn-action" onclick="eliminarRegistro('${id}', '${cliente.placa}')" style="background-color: #e74c3c;" title="Eliminar registro mal hecho">🗑️ Borrar</button>
+            </td>
+        `;
+        tabla.appendChild(fila);
+    });
+});
+
+// =================================================================
+// 4. FUNCIONES CONTROLADORAS: Panel de Control del Historial (Modal)
+// =================================================================
+window.abrirModalHistorial = function(id, placa) {
+    clienteSeleccionadoId = id;
+    document.getElementById("modalPlaca").innerText = placa;
+    document.getElementById("nuevaNotaInput").value = "";
+    
+    clientesRef.doc(id).get().then((doc) => {
+        if (doc.exists) {
+            datosClienteActual = doc.data(); 
+            const contenedor = document.getElementById("notasContenedor");
+            contenedor.innerText = datosClienteActual.descripcion || "No hay notas previas registradas para este vehículo.";
+        }
+        document.getElementById("modalHistorial").style.display = "flex";
+    }).catch((error) => {
+        console.error("Error al cargar notas: ", error);
+    });
+}
+
+window.cerrarModalHistorial = function() {
+    document.getElementById("modalHistorial").style.display = "none";
+    clienteSeleccionadoId = null;
+    datosClienteActual = null;
+}
+
+const elBtnGuardarNota = document.getElementById("btnGuardarNota");
+if (elBtnGuardarNota) {
+    elBtnGuardarNota.addEventListener("click", async () => {
+        const textoNota = document.getElementById("nuevaNotaInput").value.trim();
+        if (!textoNota) {
+            alert("Por favor, escribe una anotación antes de guardar.");
             return;
         }
 
-        clientesRef.where("placa", "==", placaBuscar)
-            .orderBy("fechaRegistro", "desc")
-            .get()
-            .then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                    contenedorResultado.innerHTML = `<p style="color: #dc2626; font-weight: bold;">No se encontraron registros para la placa ${placaBuscar}.</p>`;
-                    return;
-                }
+        const hoy = new Date().toLocaleDateString('es-ES');
+        const contenedorActual = document.getElementById("notasContenedor").innerText;
+        
+        let nuevoHistorial = `[${hoy}]: ${textoNota}`;
+        if (contenedorActual && contenedorActual !== "No hay notas previas registradas para este vehículo.") {
+            nuevoHistorial = nuevoHistorial + "\n\n" + contenedorActual;
+        }
 
-                let html = `<h3>Historial de Mantenimientos - Placa: ${placaBuscar}</h3>`;
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const fecha = data.fechaRegistro ? new Date(data.fechaRegistro.toDate()).toLocaleDateString('es-PA') : 'Reciente';
-
-                    html += `
-                        <div style="border: 1px solid #d1d5db; padding: 15px; border-radius: 8px; margin-bottom: 10px; background: #f9fafb;">
-                            <p><strong>Cliente:</strong> ${data.cliente}</p>
-                            <p><strong>Vehículo:</strong> ${data.vehiculo}</p>
-                            <p><strong>Servicio:</strong> ${data.servicio}</p>
-                            <p><strong>Estado:</strong> <span style="font-weight: bold; color: #2563eb;">${data.estado}</span></p>
-                            <p><strong>Fecha:</strong> ${fecha}</p>
-                            <button onclick="abrirModalActualizacion('${doc.id}', '${data.cliente}', '${data.correo}', '${data.placa}', '${data.vehiculo}', '${data.servicio}', '${data.estado}')" style="width: auto; padding: 6px 12px; font-size: 13px; margin-top: 5px;">Actualizar Estado</button>
-                        </div>
-                    `;
-                });
-
-                contenedorResultado.innerHTML = html;
-            })
-            .catch((error) => {
-                console.error("Error al buscar vehículo:", error);
-                alert("Ocurrió un error al realizar la búsqueda.");
+        try {
+            await clientesRef.doc(clienteSeleccionadoId).update({
+                descripcion: nuevoHistorial
             });
+            alert("📝 Nota agregada correctamente a la bitácora del vehículo.");
+            cerrarModalHistorial();
+        } catch (error) {
+            console.error("Error al actualizar la nota en Firebase: ", error);
+            alert("No se pudo guardar la nota.");
+        }
     });
 }
 
-// ==========================================
-// 7. MODAL Y ACTUALIZACIÓN DE ESTADO
-// ==========================================
+const elBtnDescargarHistorial = document.getElementById("btnDescargarHistorial");
+if (elBtnDescargarHistorial) {
+    elBtnDescargarHistorial.addEventListener("click", () => {
+        if (!datosClienteActual || !datosClienteActual.descripcion) {
+            alert("No hay historial disponible para descargar.");
+            return;
+        }
 
-window.abrirModalActualizacion = function(id, cliente, correo, placa, vehiculo, servicio, estadoActual) {
-    clienteSeleccionadoId = id;
-    datosClienteActual = { cliente, correo, placa, vehiculo, servicio };
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-    const selectEstadoModal = document.getElementById('nuevoEstadoModal');
-    if (selectEstadoModal) {
-        selectEstadoModal.value = estadoActual;
-    }
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(44, 62, 80);
+        doc.text("HISTORIAL DE MANTENIMIENTO AUTOMOTRIZ", 14, 20);
 
-    const modal = document.getElementById('modalActualizar');
-    if (modal) {
-        modal.style.display = 'block';
-    }
-};
+        doc.setDrawColor(241, 196, 15);
+        doc.setLineWidth(1);
+        doc.line(14, 24, 196, 24);
 
-window.cerrarModal = function() {
-    const modal = document.getElementById('modalActualizar');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-};
+        doc.setFontSize(11);
+        doc.setTextColor(51, 51, 51);
+        
+        doc.text(`Cliente:`, 14, 34);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${datosClienteActual.nombre}`, 45, 34);
 
-const btnGuardarModal = document.getElementById('btnGuardarEstadoModal');
-if (btnGuardarModal) {
-    btnGuardarModal.addEventListener('click', () => {
-        const nuevoEstado = document.getElementById('nuevoEstadoModal').value;
+        doc.setFont("helvetica", "bold");
+        doc.text(`Vehículo:`, 14, 41);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${datosClienteActual.vehiculo}`, 45, 41);
 
-        if (!clienteSeleccionadoId) return;
+        doc.setFont("helvetica", "bold");
+        doc.text(`Placa / Matrícula:`, 14, 48);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${datosClienteActual.placa}`, 45, 48);
 
-        clientesRef.doc(clienteSeleccionadoId).update({
-            estado: nuevoEstado,
-            ultimaActualizacion: firebase.firestore.FieldValue.serverTimestamp()
+        doc.setFont("helvetica", "bold");
+        doc.text(`WhatsApp:`, 14, 55);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${datosClienteActual.whatsapp}`, 45, 55);
+
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, 62, 196, 62);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(44, 62, 80);
+        doc.text("TRABAJOS REALIZADOS EN EL TALLER", 14, 71);
+
+        const todasLasNotas = datosClienteActual.descripcion.split("\n\n");
+        const ultimas5Notas = todasLasNotas.slice(0, 5);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        doc.setTextColor(60, 60, 60);
+
+        let ejeY = 82;
+
+        ultimas5Notas.forEach((nota, index) => {
+            const lineasTexto = doc.splitTextToSize(`${index + 1}. ${nota}`, 180);
+            doc.text(lineasTexto, 14, ejeY);
+            ejeY += (lineasTexto.length * 6) + 6; 
+        });
+
+        doc.setDrawColor(220, 220, 220);
+        doc.line(14, 275, 196, 275);
+        doc.setFontSize(9);
+        doc.setTextColor(127, 135, 143);
+        doc.text(`Documento oficial de control interno - Generado el: ${new Date().toLocaleString('es-ES')}`, 14, 282);
+
+        doc.save(`Historial_${datosClienteActual.placa}.pdf`);
+    });
+}
+
+// =================================================================
+// 5. FUNCIÓN: Botón rápido para renovar visita al día de hoy
+// =================================================================
+window.renovarVisita = function(id) {
+    const hoy = new Date().toISOString().split('T')[0];
+    
+    if(confirm("¿Confirmas que este vehículo está realizando un nuevo mantenimiento hoy? Esto reiniciará el conteo y habilitará futuras alertas.")) {
+        clientesRef.doc(id).update({
+            fechaMantenimiento: hoy,
+            notificado: false 
         })
         .then(() => {
-            const templateParams = {
-                to_name: datosClienteActual.cliente,
-                to_email: datosClienteActual.correo,
-                placa: datosClienteActual.placa,
-                vehiculo: datosClienteActual.vehiculo,
-                servicio: datosClienteActual.servicio,
-                estado: nuevoEstado
-            };
-
-            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
-        })
-        .then(() => {
-            alert("Estado actualizado y notificación enviada al cliente.");
-            cerrarModal();
-            const btnBuscar = document.getElementById('btnBuscarPlaca');
-            if (btnBuscar) btnBuscar.click();
+            alert("🔄 Conteo reiniciado con éxito para este vehículo.");
         })
         .catch((error) => {
-            console.error("Error al actualizar estado:", error);
-            alert("Se actualizó el estado pero hubo un problema enviando la notificación.");
+            console.error("Error al actualizar la visita: ", error);
         });
-    });
+    }
+}
+
+// =================================================================
+// 6. FUNCIÓN: Buscador en tiempo real de la tabla
+// =================================================================
+window.filtrarTabla = function() {
+    const buscarTexto = document.getElementById("buscador").value.toLowerCase();
+    const filas = document.getElementById("tablaClientes").getElementsByTagName("tr");
+
+    for (let i = 0; i < filas.length; i++) {
+        const celdaTexto = filas[i].innerText.toLowerCase();
+        if (celdaTexto.includes(buscarTexto)) {
+            filas[i].style.display = "";
+        } else {
+            filas[i].style.display = "none";
+        }
+    }
+}
+
+// =================================================================
+// 7. FUNCIÓN: Botón para eliminar el registro de Firebase por completo
+// =================================================================
+window.eliminarRegistro = function(id, placa) {
+    if (confirm(`¿Estás completamente seguro de que deseas eliminar permanentemente el vehículo con placa [${placa}]? Esta acción no se puede deshacer.`)) {
+        
+        clientesRef.doc(id).delete()
+        .then(() => {
+            alert(`🗑️ El registro con placa ${placa} ha sido eliminado correctamente de la base de datos.`);
+        })
+        .catch((error) => {
+            console.error("Error al eliminar el documento de Firebase: ", error);
+            alert("No se pudo eliminar el registro. Revisa la consola.");
+        });
+    }
+}
+
+// =================================================================
+// 8. FUNCIÓN INTERNA: Envío de correo electrónico vía EmailJS
+// =================================================================
+function enviarRecordatorioCliente(nombre, correo, vehiculo, placa) {
+    const templateParams = {
+        nombre: nombre,
+        correo: correo,
+        vehiculo: vehiculo,
+        placa: placa
+    };
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY)
+        .then(function(response) {
+            console.log('¡Correo enviado con éxito!', response.status, response.text);
+        }, function(error) {
+            console.error('Error al enviar el correo:', error);
+        });
 }
