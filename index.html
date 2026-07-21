@@ -209,7 +209,12 @@ h2 {
         <p id="login-error" style="color: #dc2626; margin-top: 15px; font-size: 0.9rem; display: none;"></p>
     </form>
 </div>
-
+<!-- Botón para instalar la PWA (Oculto por defecto) -->
+<div style="text-align: center; margin-top: 15px;">
+  <button id="btnInstalar" style="display: none; background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+    📥 Instalar Aplicación
+  </button>
+</div>
 <!-- =================================================================
  🛠️ CONTENEDOR PRINCIPAL DEL SISTEMA (SRM DANIELA)
 ================================================================= -->
@@ -340,17 +345,52 @@ h2 {
 
 <!-- Lógica del taller -->
 <script src="app.js"></script>
-<!-- Activador SIMPLE de App de Escritorio (Sin bloqueo de banner) -->
+<!-- Activador y Control del Botón de Instalación (PWA) -->
 <script>
+  // 1. Registrar el Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
-      .then(function() {
-        console.log("Service Worker registrado correctamente");
-      })
-      .catch(function(error) {
-        console.log("Error al registrar el Service Worker: ", error);
-      });
+      .then(function() { console.log("Service Worker listo"); })
+      .catch(function(err) { console.log("Error en SW: ", err); });
   }
+
+  // 2. Controlar el botón de instalación personalizado
+  let eventoInstalacion;
+  const btnInstalar = document.getElementById('btnInstalar');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Previene la barra por defecto para usar nuestro botón verde
+    e.preventDefault();
+    eventoInstalacion = e;
+    
+    // Muestra el botón de instalación verde
+    if (btnInstalar) {
+      btnInstalar.style.display = 'inline-block';
+    }
+  });
+
+  if (btnInstalar) {
+    btnInstalar.addEventListener('click', async () => {
+      if (eventoInstalacion) {
+        // Muestra la ventana de confirmación de instalación
+        eventoInstalacion.prompt();
+        const { outcome } = await eventoInstalacion.userChoice;
+        console.log(`Resultado de instalación: ${outcome}`);
+        
+        // Oculta el botón si el usuario aceptó instalar
+        if (outcome === 'accepted') {
+          btnInstalar.style.display = 'none';
+        }
+        eventoInstalacion = null;
+      }
+    });
+  }
+
+  // Ocultar botón automáticamente si la app ya fue instalada
+  window.addEventListener('appinstalled', () => {
+    if (btnInstalar) btnInstalar.style.display = 'none';
+    console.log('¡PWA instalada con éxito!');
+  });
 </script>
 </body>
 </html>
