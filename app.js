@@ -267,3 +267,4 @@ if (btnGuardarModal) {
             alert("Se actualizó el estado pero hubo un problema enviando la notificación.");
         });
 });
+}
