@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SRM Daniela - Panel de Control</title>
 
-    <!-- LIBRERÍAS DE FIREBASE (EN ORDEN CORRECTO) -->
+    <!-- LIBRERÍAS DE FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <!-- EMAILJS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <style>
-        /* =========================================================
-           ESTILOS OPTIMIZADOS PARA MÁXIMA VISIBILIDAD (FONDO CLARO)
-           ========================================================= */
         body {
             background-color: #f3f4f6;
             color: #1f2937;
@@ -40,7 +38,7 @@
             padding: 25px;
         }
 
-        h1, h2 {
+        h1, h2, h3 {
             text-align: center;
             color: #111827;
         }
@@ -81,7 +79,6 @@
             background-color: #1d4ed8;
         }
 
-        /* Estilo del Login */
         #login-container {
             max-width: 400px;
             margin: 50px auto;
@@ -108,13 +105,33 @@
         #btn-logout:hover {
             background-color: #b91c1c;
         }
+
+        /* ESTILOS DEL MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
 
-    <!-- ========================================== -->
-    <!-- PANTALLA DE LOGIN (VISIBLE AL ENTRAR)      -->
-    <!-- ========================================== -->
+    <!-- PANTALLA DE LOGIN -->
     <div id="login-container">
         <h2 style="margin-bottom: 20px; color: #1f2937;">Acceso al Sistema</h2>
         <input type="email" id="login-email" placeholder="Correo electrónico" required>
@@ -123,21 +140,16 @@
         <p id="login-error" style="color: #dc2626; display: none; margin-top: 15px; font-size: 14px; font-weight: bold;"></p>
     </div>
 
-
-    <!-- ========================================== -->
-    <!-- SISTEMA PRINCIPAL (OCULTO INICIALMENTE)    -->
-    <!-- ========================================== -->
+    <!-- SISTEMA PRINCIPAL -->
     <div id="app-container" style="display: none;">
-        
         <div class="container">
             <button id="btn-logout" type="button">Cerrar Sesión</button>
             <div style="clear: both;"></div>
 
             <h1>👨‍🔧 Sistema de Registro de Mantenimiento - SRM DANIELA</h1>
 
-            <!-- Sección Formulario -->
+            <!-- FORMULARIO REGISTRO -->
             <div class="card">
-                <!-- CONTENEDOR DEL LOGO DEL TALLER -->
                 <div style="text-align: center; margin-bottom: 20px;">
                     <img src="logo-taller.png" alt="Logo del Taller" style="max-width: 180px; height: auto;">
                 </div>
@@ -187,11 +199,37 @@
                     <button type="submit" id="btn-guardar">Guardar y Notificar al Cliente</button>
                 </form>
             </div>
+
+            <!-- BÚSQUEDA POR PLACA -->
+            <div class="card">
+                <h2>Buscar Historial por Placa</h2>
+                <div class="form-group">
+                    <input type="text" id="buscarPlaca" placeholder="Ingrese placa..." style="text-transform: uppercase;">
+                </div>
+                <button type="button" id="btnBuscarPlaca">Buscar Registros</button>
+
+                <div id="resultadoBusqueda" style="margin-top: 20px;"></div>
+            </div>
         </div>
+    </div>
 
-    </div> <!-- FIN DE APP-CONTAINER -->
+    <!-- MODAL PARA ACTUALIZAR ESTADO -->
+    <div id="modalActualizar" class="modal">
+        <div class="modal-content">
+            <h3>Actualizar Estado del Vehículo</h3>
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="nuevoEstadoModal">Nuevo Estado:</label>
+                <select id="nuevoEstadoModal">
+                    <option value="En Proceso">En Proceso</option>
+                    <option value="Listo para Entrega">Listo para Entrega</option>
+                    <option value="Entregado">Entregado</option>
+                </select>
+            </div>
+            <button type="button" id="btnGuardarEstadoModal" style="margin-bottom: 10px;">Guardar y Notificar</button>
+            <button type="button" onclick="cerrarModal()" style="background-color: #6b7280;">Cancelar</button>
+        </div>
+    </div>
 
-    <!-- CÓDIGO JS PRINCIPAL DE LA APLICACIÓN -->
     <script src="app.js"></script>
 </body>
 </html>
