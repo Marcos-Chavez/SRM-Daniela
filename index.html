@@ -341,10 +341,20 @@ h2 {
 <!-- Lógica del taller -->
 <script src="app.js"></script>
 <script>
+  // 1. Registrar el Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("Aplicación lista para instalar"))
+      .then(() => console.log("Service Worker listo"))
       .catch(err => console.log("Error al registrar SW:", err));
   }
+
+  // 2. Capturar el evento para que salte la instalación fácil
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("¡App lista para instalar fácilmente!");
+  });
+</script>
 </body>
 </html>
