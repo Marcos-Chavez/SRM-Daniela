@@ -4,9 +4,9 @@
 
 const firebaseConfig = {
     apiKey: "AIzaSyC97fkEWWkIjBLDpwvVxN2euhk8N7FNA40",
-    authDomain: "SRM-Daniela.firebaseapp.com",
-    projectId: "SRM-Daniela",
-    storageBucket: "SRM-Daniela.appspot.com",
+    authDomain: "srm-daniela.firebaseapp.com",
+    projectId: "srm-daniela",
+    storageBucket: "srm-daniela.firebasestorage.app",
     messagingSenderId: "976335690387",
     appId: "1:976335690387:web:d01c0bf7815b379162cb66"
 };
