@@ -1,5 +1,25 @@
+// ==========================================
+// 1. CREDENCIALES Y CONFIGURACIÓN DE FIREBASE
+// ==========================================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyC97fkEWWkIjBLDpwvVxN2euhk8N7FNA40",
+    authDomain: "SRM-Daniela.firebaseapp.com",
+    projectId: "SRM-Daniela",
+    storageBucket: "SRM-Daniela.appspot.com",
+    messagingSenderId: "976335690387",
+    appId: "1:976335690387:web:d01c0bf7815b379162cb66"
+};
+
+// Inicializar Firebase si no está inicializado
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+// Inicializar Firestore
+const db = firebase.firestore();
 // =================================================================
-// 1. CREDENCIALES GLOBALES DE EMAILJS Y CONFIGURACIÓN GENERAL
+//  CREDENCIALES GLOBALES DE EMAILJS Y CONFIGURACIÓN GENERAL
 // =================================================================
 const EMAILJS_SERVICE_ID = 'service_qhsl26c';
 const EMAILJS_TEMPLATE_ID = 'template_acyhfbb';
