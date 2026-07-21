@@ -160,7 +160,7 @@ if (elRegistroForm) {
 
                 if (tipoServicio === "Mantenimiento") {
                     const fechaBase = new Date(fechaFormulario);
-                    fechaBase.setDate(fechaBase.getDate() + 140);
+                    fechaBase.setDate(fechaBase.getDate() + 105);
                     const nuevaFechaAlerta = fechaBase.toISOString().split('T')[0];
 
                     datosAEnviar.fechaMantenimiento = fechaFormulario;
@@ -190,7 +190,7 @@ if (elRegistroForm) {
 
                 if (tipoServicio === "Mantenimiento") {
                     const fechaBase = new Date(fechaFormulario);
-                    fechaBase.setDate(fechaBase.getDate() + 140);
+                    fechaBase.setDate(fechaBase.getDate() + 105);
                     fechaAlertaFinal = fechaBase.toISOString().split('T')[0];
                     esNotificado = false;
                 } else {
@@ -321,7 +321,7 @@ clientesRef.onSnapshot((snapshot) => {
 
         const fechaUltimo = new Date(cliente.fechaMantenimiento);
         const fechaProxima = new Date(fechaUltimo);
-        fechaProxima.setDate(fechaProxima.getDate() + 140); 
+        fechaProxima.setDate(fechaProxima.getDate() + 105); 
 
         const fechaHoy = new Date();
         const diferenciaTiempo = fechaProxima - fechaHoy;
