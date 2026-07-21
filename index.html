@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1553a7">
     <title>SRM Daniela - Panel de Control</title>
     <style>
     /* =================================================================
@@ -338,6 +340,11 @@ h2 {
 
 <!-- Lógica del taller -->
 <script src="app.js"></script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Aplicación lista para instalar"))
+      .catch(err => console.log("Error al registrar SW:", err));
+  }
 </body>
 </html>
