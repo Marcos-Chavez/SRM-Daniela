@@ -5,6 +5,7 @@
 const firebaseConfig = {
     apiKey: "AIzaSyC97fkEWWkIjBLDpwvVxN2euhk8N7FNA40",
     authDomain: "srm-daniela.firebaseapp.com",
+    databaseURL: "https://srm-daniela-default-rtdb.firebaseio.com",
     projectId: "srm-daniela",
     storageBucket: "srm-daniela.firebasestorage.app",
     messagingSenderId: "976335690387",
@@ -40,9 +41,8 @@ const clientesRef = db.collection("clientes");
 
 let clienteSeleccionadoId = null;
 let datosClienteActual = null;
-let ultimoRegistroProcesado = null;
 
-// Protección para la fecha en el formulario si el campo existe en HTML
+// Protección para la fecha en el formulario si existe en el HTML
 const campoFecha = document.getElementById('fechaMantenimiento');
 if (campoFecha) {
     campoFecha.value = new Date().toISOString().split('T')[0];
@@ -260,11 +260,11 @@ if (btnGuardarModal) {
             alert("Estado actualizado y notificación enviada al cliente.");
             cerrarModal();
             const btnBuscar = document.getElementById('btnBuscarPlaca');
-            if (btnBuscar) btnBuscar.click(); // Refrescar la búsqueda
+            if (btnBuscar) btnBuscar.click();
         })
         .catch((error) => {
             console.error("Error al actualizar estado:", error);
             alert("Se actualizó el estado pero hubo un problema enviando la notificación.");
         });
-});
+    });
 }
