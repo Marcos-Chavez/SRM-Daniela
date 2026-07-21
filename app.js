@@ -11,24 +11,21 @@ const firebaseConfig = {
     appId: "1:976335690387:web:d01c0bf7815b379162cb66"
 };
 
-// Inicializar Firebase si aún no ha sido cargado
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-// Inicializar Firestore y Autenticación
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 // ==========================================
-// 2. CREDENCIALES Y CONFIGURACIÓN DE EMAILJS
+// 2. CONFIGURACIÓN DE EMAILJS
 // ==========================================
 
 const EMAILJS_SERVICE_ID = 'service_qhs126c';
 const EMAILJS_TEMPLATE_ID = 'template_acyhfbb';
 const EMAILJS_PUBLIC_KEY = 'ju9VOg1iEFoz2ny8u';
 
-// Inicializar EmailJS
 if (typeof emailjs !== 'undefined') {
     emailjs.init(EMAILJS_PUBLIC_KEY);
 }
@@ -41,6 +38,12 @@ const clientesRef = db.collection("clientes");
 
 let clienteSeleccionadoId = null;
 let datosClienteActual = null;
+
+// Asignar fecha actual solo si el campo existe en el HTML
+const campoFecha = document.getElementById('fechaMantenimiento');
+if (campoFecha) {
+    campoFecha.value = new Date().toISOString().split('T')[0];
+}
 
 // ==========================================
 // 4. AUTENTICACIÓN (LOGIN / LOGOUT)
@@ -55,11 +58,9 @@ const loginError = document.getElementById('login-error');
 // Control del estado de la sesión en tiempo real
 auth.onAuthStateChanged((user) => {
     if (user) {
-        // Usuario autenticado: ocultar pantalla de login y mostrar el sistema
         if (loginContainer) loginContainer.style.display = 'none';
         if (appContainer) appContainer.style.display = 'block';
     } else {
-        // Usuario no autenticado: mostrar pantalla de login y ocultar el sistema
         if (loginContainer) loginContainer.style.display = 'block';
         if (appContainer) appContainer.style.display = 'none';
     }
@@ -126,12 +127,10 @@ if (registroForm) {
             fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // Guardar registro en Firestore
         clientesRef.add(nuevoRegistro)
             .then((docRef) => {
                 console.log("Registro guardado con ID:", docRef.id);
                 
-                // Enviar notificación por correo con EmailJS
                 const templateParams = {
                     to_name: cliente,
                     to_email: correo,
@@ -150,7 +149,7 @@ if (registroForm) {
             })
             .catch((error) => {
                 console.error("Error en el proceso:", error);
-                alert("El registro se guardó, pero hubo un detalle al enviar el correo o conectar a la BD.");
+                alert("El registro se guardó, pero hubo un detalle al enviar el correo.");
             });
     });
 }
