@@ -12,17 +12,16 @@ const firebaseConfig = {
     appId: "1:976335690387:web:d01c0bf7815b379162cb66"
 };
 
-// Inicializar Firebase si aún no ha sido cargado
+// Inicializar Firebase
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-// Inicializar Firestore y Autenticación
 const db = firebase.firestore();
 const auth = firebase.auth();
 
 // ==========================================
-// 2. CREDENCIALES Y CONFIGURACIÓN DE EMAILJS
+// 2. CONFIGURACIÓN DE EMAILJS
 // ==========================================
 
 const EMAILJS_SERVICE_ID = 'service_qhs126c';
@@ -42,14 +41,13 @@ const clientesRef = db.collection("clientes");
 let clienteSeleccionadoId = null;
 let datosClienteActual = null;
 
-// Protección para la fecha en el formulario si existe en el HTML
 const campoFecha = document.getElementById('fechaMantenimiento');
 if (campoFecha) {
     campoFecha.value = new Date().toISOString().split('T')[0];
 }
 
 // ==========================================
-// 4. AUTENTICACIÓN Y CONTROL DE VISTAS (LOGIN / LOGOUT)
+// 4. AUTENTICACIÓN (LOGIN / LOGOUT)
 // ==========================================
 
 const loginContainer = document.getElementById('login-container');
@@ -58,7 +56,6 @@ const loginFormBtn = document.getElementById('btn-login');
 const logoutBtn = document.getElementById('btn-logout');
 const loginError = document.getElementById('login-error');
 
-// Monitoreo de sesión de usuario en tiempo real
 auth.onAuthStateChanged((user) => {
     if (user) {
         if (loginContainer) loginContainer.style.display = 'none';
@@ -100,7 +97,7 @@ if (logoutBtn) {
 }
 
 // ==========================================
-// 5. REGISTRO DE TRABAJOS Y ENVÍO DE NOTIFICACIONES
+// 5. REGISTRO DE TRABAJOS Y NOTIFICACIÓN
 // ==========================================
 
 const registroForm = document.getElementById('registroForm');
@@ -208,7 +205,7 @@ if (btnBuscar) {
 }
 
 // ==========================================
-// 7. MODAL Y ACTUALIZACIÓN DE ESTADO CON NOTIFICACIÓN
+// 7. MODAL Y ACTUALIZACIÓN DE ESTADO
 // ==========================================
 
 window.abrirModalActualizacion = function(id, cliente, correo, placa, vehiculo, servicio, estadoActual) {
