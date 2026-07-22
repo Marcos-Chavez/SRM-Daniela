@@ -184,6 +184,34 @@ h2 {
         .btn-action:hover { background-color: #219653; }
         .btn-ws { background-color: #25d366; }
         .btn-ws:hover { background-color: #20ba5a; }
+/* --- Ajuste Responsivo para Pantallas Anchas (PC y Tablet) --- */
+    @media (min-width: 768px) {
+      .container, #app, main, .main-content, .card, table {
+        width: 95% !important;
+        max-width: 1400px !important;
+        margin: 15px auto !important;
+      }
+
+      .table-responsive, .table-container, div[style*="overflow-x"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: visible !important;
+      }
+
+      table {
+        width: 100% !important;
+        table-layout: auto !important;
+      }
+
+      td:last-child, .acciones {
+        white-space: nowrap;
+      }
+
+      td:last-child button, td:last-child a, .acciones button {
+        display: inline-block !important;
+        margin: 2px !important;
+      }
+    }
     </style>
 </head>
 <body>
